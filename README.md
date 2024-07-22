@@ -1,1 +1,1 @@
-this is a VBA code that will make multiple copies of the current worksheet
+This is a VBA code that will make multiple copies of the current worksheet
