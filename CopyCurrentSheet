@@ -14,9 +14,12 @@ Sub CopyCurrentSheet()
     
     ' Prompt the user for the position of the copied sheets
     positionChoice = InputBox("Enter the position for the copied sheets:" & vbCrLf & _
-                              "1 = First" & vbCrLf & "2 = Last" & vbCrLf & "3 = Alphabetical", _
+                              "1 = First" & vbCrLf & "2 = Last" & vbCrLf & _
+                              "3 = Left of Original" & vbCrLf & _
+                              "4 = Right of Original" & vbCrLf & _
+                              "5 = Alphabetical", _
                               "Sheet Position")
-    If positionChoice < 1 Or positionChoice > 3 Then GoTo InvalidInput
+    If positionChoice < 1 Or positionChoice > 5 Then GoTo InvalidInput
     
     ' Get the name of the current sheet
     sheetName = ActiveSheet.Name
@@ -42,7 +45,15 @@ Sub CopyCurrentSheet()
             Next i
         Case 2 ' Last
             ' Already placed at the last position by default
-        Case 3 ' Alphabetical
+        Case 3 ' Left of Original
+            For i = 1 To numCopies
+                Sheets(sheetName & " Copy " & i).Move Before:=Sheets(sheetName)
+            Next i
+        Case 4 ' Right of Original
+            For i = numCopies To 1 Step -1
+                Sheets(sheetName & " Copy " & i).Move After:=Sheets(sheetName)
+            Next i
+        Case 5 ' Alphabetical
             ' Sort the sheets alphabetically
             SortSheets sheetNames
     End Select
