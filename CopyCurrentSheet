@@ -1,0 +1,24 @@
+Sub CopyCurrentSheet()
+    Dim sheetName As String
+    Dim numCopies As Integer
+    Dim i As Integer
+    
+    ' Prompt the user for the number of copies
+    On Error GoTo InvalidInput
+    numCopies = InputBox("How many copies would you like to make?", "Copy Sheet")
+    If numCopies <= 0 Then GoTo InvalidInput
+    
+    ' Get the name of the current sheet
+    sheetName = ActiveSheet.Name
+    
+    ' Make the specified number of copies
+    For i = 1 To numCopies
+        ActiveSheet.Copy After:=Sheets(Sheets.Count)
+        Sheets(Sheets.Count).Name = sheetName & " Copy " & i
+    Next i
+    
+    Exit Sub
+
+InvalidInput:
+    MsgBox "Please enter a valid number of copies.", vbExclamation
+End Sub
