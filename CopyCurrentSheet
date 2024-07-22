@@ -4,8 +4,6 @@ Sub CopyCurrentSheet()
     Dim positionChoice As Integer
     Dim i As Integer
     Dim ws As Worksheet
-    Dim sheetNames As Collection
-    Dim tempSheet As Worksheet
     
     ' Prompt the user for the number of copies
     On Error GoTo InvalidInput
@@ -15,26 +13,17 @@ Sub CopyCurrentSheet()
     ' Prompt the user for the position of the copied sheets
     positionChoice = InputBox("Enter the position for the copied sheets:" & vbCrLf & _
                               "1 = First" & vbCrLf & "2 = Last" & vbCrLf & _
-                              "3 = Left of Original" & vbCrLf & _
-                              "4 = Right of Original" & vbCrLf & _
-                              "5 = Alphabetical", _
+                              "3 = Left of Original" & vbCrLf & "4 = Right of Original", _
                               "Sheet Position")
-    If positionChoice < 1 Or positionChoice > 5 Then GoTo InvalidInput
+    If positionChoice < 1 Or positionChoice > 4 Then GoTo InvalidInput
     
     ' Get the name of the current sheet
     sheetName = ActiveSheet.Name
-    
-    ' Create a collection to hold the sheet names for sorting
-    Set sheetNames = New Collection
-    For Each ws In ThisWorkbook.Worksheets
-        sheetNames.Add ws.Name
-    Next ws
     
     ' Make the specified number of copies
     For i = 1 To numCopies
         ActiveSheet.Copy After:=Sheets(Sheets.Count)
         Sheets(Sheets.Count).Name = sheetName & " Copy " & i
-        sheetNames.Add sheetName & " Copy " & i
     Next i
     
     ' Place the copied sheets in the desired position
@@ -53,35 +42,10 @@ Sub CopyCurrentSheet()
             For i = numCopies To 1 Step -1
                 Sheets(sheetName & " Copy " & i).Move After:=Sheets(sheetName)
             Next i
-        Case 5 ' Alphabetical
-            ' Sort the sheets alphabetically
-            SortSheets sheetNames
     End Select
     
     Exit Sub
 
 InvalidInput:
     MsgBox "Please enter a valid number of copies and position choice.", vbExclamation
-End Sub
-
-Sub SortSheets(sheetNames As Collection)
-    Dim i As Integer, j As Integer
-    Dim temp As String
-    
-    ' Bubble sort the sheet names
-    For i = 1 To sheetNames.Count - 1
-        For j = i + 1 To sheetNames.Count
-            If sheetNames(i) > sheetNames(j) Then
-                temp = sheetNames(i)
-                sheetNames(i) = sheetNames(j)
-                sheetNames(j) = temp
-            End If
-        Next j
-    Next i
-    
-    ' Move the sheets to their new positions
-    For i = 1 To sheetNames.Count
-        Set tempSheet = ThisWorkbook.Sheets(sheetNames(i))
-        tempSheet.Move Before:=ThisWorkbook.Sheets(i)
-    Next i
 End Sub
