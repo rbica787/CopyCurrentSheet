@@ -1,51 +1,26 @@
 Sub CopyCurrentSheet()
     Dim sheetName As String
     Dim numCopies As Integer
-    Dim positionChoice As Integer
     Dim i As Integer
-    Dim ws As Worksheet
+    Dim originalSheet As Worksheet
     
     ' Prompt the user for the number of copies
     On Error GoTo InvalidInput
     numCopies = InputBox("How many copies would you like to make?", "Copy Sheet")
     If numCopies <= 0 Then GoTo InvalidInput
     
-    ' Prompt the user for the position of the copied sheets
-    positionChoice = InputBox("Enter the position for the copied sheets:" & vbCrLf & _
-                              "1 = First" & vbCrLf & "2 = Last" & vbCrLf & _
-                              "3 = Left of Original" & vbCrLf & "4 = Right of Original", _
-                              "Sheet Position")
-    If positionChoice < 1 Or positionChoice > 4 Then GoTo InvalidInput
-    
     ' Get the name of the current sheet
-    sheetName = ActiveSheet.Name
+    Set originalSheet = ActiveSheet
+    sheetName = originalSheet.Name
     
-    ' Make the specified number of copies
+    ' Make the specified number of copies to the right of the original sheet
     For i = 1 To numCopies
-        ActiveSheet.Copy After:=Sheets(Sheets.Count)
-        Sheets(Sheets.Count).Name = sheetName & " Copy " & i
+        originalSheet.Copy After:=originalSheet
+        Sheets(originalSheet.Index + i).Name = sheetName & " Copy " & i
     Next i
-    
-    ' Place the copied sheets in the desired position
-    Select Case positionChoice
-        Case 1 ' First
-            For i = 1 To numCopies
-                Sheets(sheetName & " Copy " & i).Move Before:=Sheets(1)
-            Next i
-        Case 2 ' Last
-            ' Already placed at the last position by default
-        Case 3 ' Left of Original
-            For i = 1 To numCopies
-                Sheets(sheetName & " Copy " & i).Move Before:=Sheets(sheetName)
-            Next i
-        Case 4 ' Right of Original
-            For i = numCopies To 1 Step -1
-                Sheets(sheetName & " Copy " & i).Move After:=Sheets(sheetName)
-            Next i
-    End Select
     
     Exit Sub
 
 InvalidInput:
-    MsgBox "Please enter a valid number of copies and position choice.", vbExclamation
+    MsgBox "Please enter a valid number of copies.", vbExclamation
 End Sub
