@@ -1,26 +1,88 @@
 Sub CopyCurrentSheet()
     Dim sheetName As String
-    Dim numCopies As Integer
-    Dim i As Integer
+    Dim numCopies As Long
+    Dim i As Long
     Dim originalSheet As Worksheet
-    
-    ' Prompt the user for the number of copies
+    Dim resp As VbMsgBoxResult
+    Dim baseName As String
+    Dim newName As String
+    Dim pos As Long
+    Dim suffix As String
+    Dim origNumber As Long
+    Dim j As Long
+
     On Error GoTo InvalidInput
-    numCopies = InputBox("How many copies would you like to make?", "Copy Sheet")
+    numCopies = CLng(InputBox("How many copies would you like to make?", "Copy Sheet"))
     If numCopies <= 0 Then GoTo InvalidInput
-    
-    ' Get the name of the current sheet
+
     Set originalSheet = ActiveSheet
     sheetName = originalSheet.Name
-    
-    ' Make the specified number of copies to the right of the original sheet
+
+    resp = MsgBox("Would you like to increment the numbers in the copied worksheets' titles?", vbYesNo + vbQuestion, "Increment Titles?")
+
+    ' Find trailing numeric part (if any). Scans from right to left.
+    pos = 0
+    For j = Len(sheetName) To 1 Step -1
+        If Mid(sheetName, j, 1) Like "[0-9]" Then
+            pos = j
+        Else
+            If pos <> 0 Then Exit For
+        End If
+    Next j
+
+    If pos <> 0 Then
+        suffix = Mid(sheetName, pos, Len(sheetName) - pos + 1)
+        If IsNumeric(suffix) Then
+            baseName = Left(sheetName, pos - 1)
+            origNumber = CLng(suffix)
+        Else
+            baseName = sheetName
+            origNumber = 0
+            pos = 0
+        End If
+    Else
+        baseName = sheetName
+        origNumber = 0
+    End If
+
     For i = 1 To numCopies
-        originalSheet.Copy After:=originalSheet
-        Sheets(originalSheet.Index + i).Name = sheetName & " Copy " & i
+        originalSheet.Copy After:=Sheets(originalSheet.Index + i - 1) ' copy to right of last copy
+        If resp = vbYes And pos <> 0 Then
+            newName = baseName & CStr(origNumber + i)
+        ElseIf resp = vbYes And pos = 0 Then
+            newName = sheetName & " " & CStr(i)
+        Else
+            newName = sheetName & " Copy " & CStr(i)
+        End If
+
+        ' Ensure name valid length and unique
+        newName = Left(newName, 31)
+        j = 1
+        Do While SheetNameExists(newName)
+            If resp = vbYes And pos <> 0 Then
+                newName = Left(baseName & CStr(origNumber + i) & " (" & j & ")", 31)
+            Else
+                newName = Left(sheetName & " Copy " & CStr(i) & " (" & j & ")", 31)
+            End If
+            j = j + 1
+        Loop
+
+        Sheets(originalSheet.Index + i).Name = newName
     Next i
-    
+
     Exit Sub
 
 InvalidInput:
     MsgBox "Please enter a valid number of copies.", vbExclamation
 End Sub
+
+Private Function SheetNameExists(ByVal nm As String) As Boolean
+    Dim ws As Worksheet
+    SheetNameExists = False
+    For Each ws In ThisWorkbook.Worksheets
+        If StrComp(ws.Name, nm, vbTextCompare) = 0 Then
+            SheetNameExists = True
+            Exit Function
+        End If
+    Next ws
+End Function
